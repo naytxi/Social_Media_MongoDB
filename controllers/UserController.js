@@ -66,12 +66,23 @@ const UserController = {
       res.status(500).json({ message: 'Error al hacer login' });
     }
   },
-  
+
   getProfile(req, res) {
   try {
     res.status(200).json({ user: req.user });
   } catch (error) {
     res.status(500).json({ message: 'Error al obtener perfil' });
+  }
+},
+
+logout(req, res) {
+  try {
+    res.status(200).json({
+      message: 'Logout exitoso. El token debe ser eliminado en el cliente.',
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error al cerrar sesión' });
   }
 }
 };
