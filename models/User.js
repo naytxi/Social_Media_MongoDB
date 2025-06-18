@@ -21,7 +21,6 @@ const UserSchema = new mongoose.Schema({
    },
    role: String,
    tokens: [],
-   orderIds: [{ type: ObjectId, ref: 'Order' }],
  },
  { timestamps: true }
 )

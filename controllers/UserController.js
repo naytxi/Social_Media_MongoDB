@@ -5,13 +5,25 @@ const jwt = require('jsonwebtoken');
 const JWT_SECRET = 'tu_clave_secreta_super_segura'; 
 
 const UserController = {
-    async register(req, res, next) {
+
+  async register(req, res, next) {
     try {
-      const user = await User.create({ ...req.body, role: 'user' })
-      res.status(201).send({ message: "Usuario registrado con éxito", user })
+      const { password, ...rest } = req.body;
+
+      if (!password) {
+        return res.status(400).json({ message: 'La contraseña es obligatoria' });
+      }
+
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      const user = await User.create({ ...rest, password: hashedPassword, role: 'user' });
+
+      const { password: _, ...userSafe } = user.toObject();
+
+      res.status(201).send({ message: "Usuario registrado con éxito", user: userSafe });
     } catch (error) {
-      error.origin = 'usuario'
-      next(error)
+      error.origin = 'usuario';
+      next(error);
     }
   },
 
