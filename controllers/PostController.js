@@ -39,7 +39,7 @@ const PostController = {
       res.status(500).json({ message: 'Error al actualizar el post' });
     }
   },
-  
+
     async delete(req, res) {
     try {
       const { id } = req.params;
@@ -57,6 +57,31 @@ const PostController = {
       res.status(500).json({ message: 'Error al eliminar el post' });
     }
   },
+
+  async searchByTitle(req, res) {
+    try {
+      const { title } = req.query;
+      const posts = await Post.find({ title: new RegExp(title, 'i') })
+        .populate('author', 'name');
+      res.status(200).json({ posts });
+    } catch (error) {
+      res.status(500).json({ message: 'Error en la búsqueda' });
+    }
+  },
+  
+    async getById(req, res) {
+    try {
+      const post = await Post.findById(req.params.id)
+        .populate('author', 'name email')
+        .populate('comments.user', 'name');
+
+      if (!post) return res.status(404).json({ message: 'Post no encontrado' });
+
+      res.status(200).json({ post });
+    } catch (error) {
+      res.status(500).json({ message: 'Error al obtener el post' });
+    }
+  }
 };
   
 module.exports = PostController;
