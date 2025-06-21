@@ -1,12 +1,9 @@
-const express = require('express');
-const router = express.Router();
-const PostController = require('../controllers/PostController');
-const auth = require('../middlewares/auth');
+router.get('/posts', PostController.getAll);
+router.get('/posts/search', PostController.searchByTitle);
+router.get('/posts/:id', PostController.getById);
+router.post('/posts', PostController.create);
+router.put('/posts/:id', PostController.update);
+router.delete('/posts/:id', PostController.delete);
 
-router.post('/', auth, PostController.create);
-router.put('/:id', auth, PostController.update);
-router.delete('/:id', auth, PostController.delete);
-router.get('/', PostController.getAll);
-router.get('/:id', PostController.getById);
-
-module.exports = router;
+router.post('/posts/:id/like', PostController.like);
+router.post('/posts/:id/unlike', PostController.unlike);

@@ -10,6 +10,10 @@ const PostSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Debe tener contenido'],
     },
+    image: {
+      type: String,
+      default: null,
+  },
     author: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
@@ -21,6 +25,9 @@ const PostSchema = new mongoose.Schema(
         text: String,
         createdAt: { type: Date, default: Date.now },
       }
+    ],
+    likes: [
+      { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
     ],
   },
   { timestamps: true }
