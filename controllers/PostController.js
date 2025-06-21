@@ -2,18 +2,21 @@ const Post = require('../models/Post');
 
 const PostController = {
 
+
   async create(req, res, next) {
     try {
-      const { title, content } = req.body;
+      const { title, content, image } = req.body;
 
       if (!title || !content) {
-        return res.status(400).json({ message: 'Debe tener un título y contenido' });
+        return res.status(400).json({ message: 'El título y el contenido son obligatorios' });
       }
 
       const post = await Post.create({
         title,
         content,
+        image: image || null,
         author: req.user.id,
+        likes: [],
       });
 
       res.status(201).json({ message: 'Post creado', post });
@@ -22,7 +25,72 @@ const PostController = {
     }
   },
 
-    async update(req, res) {
+ 
+  async getAll(req, res) {
+    try {
+      const page = parseInt(req.query.page) || 1;
+      const limit = 10;
+      const skip = (page - 1) * limit;
+
+      const posts = await Post.find()
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .populate('author', 'name');
+
+      const total = await Post.countDocuments();
+
+      res.status(200).json({
+        currentPage: page,
+        totalPages: Math.ceil(total / limit),
+        totalPosts: total,
+        posts
+      });
+    } catch (error) {
+      res.status(500).json({ message: 'Error al obtener los posts' });
+    }
+  },
+
+
+  async like(req, res) {
+    try {
+      const { id } = req.params;
+      const post = await Post.findById(id);
+
+      if (!post) return res.status(404).json({ message: 'Post no encontrado' });
+
+      if (post.likes.includes(req.user.id)) {
+        return res.status(400).json({ message: 'Ya has dado like a este post' });
+      }
+
+      post.likes.push(req.user.id);
+      await post.save();
+
+      res.status(200).json({ message: 'Like agregado', post });
+    } catch (error) {
+      res.status(500).json({ message: 'Error al dar like' });
+    }
+  },
+
+
+  async unlike(req, res) {
+    try {
+      const { id } = req.params;
+      const post = await Post.findById(id);
+
+      if (!post) return res.status(404).json({ message: 'Post no encontrado' });
+
+      post.likes = post.likes.filter(userId => userId.toString() !== req.user.id);
+      await post.save();
+
+      res.status(200).json({ message: 'Like eliminado', post });
+    } catch (error) {
+      res.status(500).json({ message: 'Error al quitar like' });
+    }
+  },
+
+
+  async update(req, res) {
     try {
       const { id } = req.params;
       const post = await Post.findById(id);
@@ -40,7 +108,8 @@ const PostController = {
     }
   },
 
-    async delete(req, res) {
+
+  async delete(req, res) {
     try {
       const { id } = req.params;
       const post = await Post.findById(id);
@@ -58,6 +127,7 @@ const PostController = {
     }
   },
 
+
   async searchByTitle(req, res) {
     try {
       const { title } = req.query;
@@ -68,8 +138,9 @@ const PostController = {
       res.status(500).json({ message: 'Error en la búsqueda' });
     }
   },
-  
-    async getById(req, res) {
+
+
+  async getById(req, res) {
     try {
       const post = await Post.findById(req.params.id)
         .populate('author', 'name email')
@@ -83,5 +154,5 @@ const PostController = {
     }
   }
 };
-  
+
 module.exports = PostController;
