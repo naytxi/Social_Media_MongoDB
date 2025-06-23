@@ -12,12 +12,12 @@ const auth = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, JWT_SECRET);
-
+    const user = await User.findById(decoded.id); 
     if (!user) {
       return res.status(401).json({ message: 'Usuario no válido' });
     }
 
-    req.user = user; 
+    req.user = user;
     next();
   } catch (error) {
     console.error(error);

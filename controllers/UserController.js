@@ -47,7 +47,7 @@ const UserController = {
         return res.status(401).json({ message: 'Credenciales inválidas' });
       }
 
-      const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '1h' });
+      const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '2h' });
 
       res.status(200).json({ message: 'Login exitoso', token });
     } catch (error) {
