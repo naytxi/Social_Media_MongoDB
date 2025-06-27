@@ -56,11 +56,47 @@ const UserController = {
     }
   },
 
-  getProfile(req, res) {
+ async getProfile(req, res) {
+    try {
+      const user = await User.findById(req.user._id)
+        .populate({
+          path: 'followers',
+          select: 'name'
+        });
+
+      const posts = await Post.find({ author: req.user._id });
+
+      res.status(200).json({
+        user: {
+          ...user.toObject(),
+          posts,
+          followersCount: user.followers.length,
+          followerNames: user.followers.map(f => f.name)
+        }
+      });
+    } catch (error) {
+      res.status(500).json({ message: 'Error al obtener perfil con posts y seguidores' });
+    }
+  },
+
+  async findByName(req, res) {
   try {
-    res.status(200).json({ user: req.user });
+    const { name } = req.query;
+    const users = await User.find({ name: { $regex: name, $options: 'i' } });
+    res.status(200).json({ users });
   } catch (error) {
-    res.status(500).json({ message: 'Error al obtener perfil' });
+    res.status(500).json({ message: 'Error al buscar por nombre' });
+  }
+},
+
+async findById(req, res) {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id).populate('followers', 'name');
+    if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
+    res.status(200).json({ user });
+  } catch (error) {
+    res.status(500).json({ message: 'Error al buscar por ID' });
   }
 },
 
