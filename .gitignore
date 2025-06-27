@@ -1,3 +1,4 @@
 /node_modules
 /pacackage-lock.json
 /config/keys.js
+/.env
