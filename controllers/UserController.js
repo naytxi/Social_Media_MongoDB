@@ -1,8 +1,9 @@
 const User = require('../models/User');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const Post = require('../models/Post');
 
-const JWT_SECRET = 'tu_clave_secreta_super_segura'; 
+const JWT_SECRET = process.env.JWT_SECRET;
 
 const UserController = {
 
@@ -56,28 +57,26 @@ const UserController = {
     }
   },
 
- async getProfile(req, res) {
-    try {
-      const user = await User.findById(req.user._id)
-        .populate({
-          path: 'followers',
-          select: 'name'
-        });
+async getProfile(req, res) {
+  try {
+    const user = await User.findById(req.user._id).populate('followers', 'name');
+    if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
 
-      const posts = await Post.find({ author: req.user._id });
+    const posts = await Post.find({ author: req.user._id });
 
-      res.status(200).json({
-        user: {
-          ...user.toObject(),
-          posts,
-          followersCount: user.followers.length,
-          followerNames: user.followers.map(f => f.name)
-        }
-      });
-    } catch (error) {
-      res.status(500).json({ message: 'Error al obtener perfil con posts y seguidores' });
-    }
-  },
+    res.status(200).json({
+      user: {
+        ...user.toObject(),
+        posts: posts || [],
+        followersCount: user.followers?.length || 0,
+        followerNames: user.followers?.map(f => f.name) || []
+      }
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error al obtener perfil con posts y seguidores' });
+  }
+},
 
   async findByName(req, res) {
   try {

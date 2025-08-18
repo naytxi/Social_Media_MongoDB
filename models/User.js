@@ -19,6 +19,10 @@ const UserSchema = new mongoose.Schema({
      type: Number,
      required: [true, 'Por favor rellena tu edad'],
    },
+   
+   followers: [
+  { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+],
    role: String,
    tokens: [],
  },
