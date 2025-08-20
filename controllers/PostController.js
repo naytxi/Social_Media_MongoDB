@@ -19,7 +19,6 @@ const PostController = {
       });
 
       await post.populate('author', 'name');
-
       res.status(201).json({ message: 'Post creado', post });
     } catch (error) {
       next(error);
@@ -63,7 +62,6 @@ const PostController = {
 
       res.status(200).json({ posts });
     } catch (error) {
-      console.error('Error en getMyPosts:', error);
       res.status(500).json({ message: 'Error al obtener tus posts', error: error.message });
     }
   },
@@ -72,7 +70,6 @@ const PostController = {
     try {
       const { id } = req.params;
       const post = await Post.findById(id);
-
       if (!post) return res.status(404).json({ message: 'Post no encontrado' });
 
       if (post.likes.includes(req.user._id)) {
@@ -81,7 +78,6 @@ const PostController = {
 
       post.likes.push(req.user._id);
       await post.save();
-
       await post.populate('author', 'name');
 
       res.status(200).json({ message: 'Like agregado', post });
@@ -94,12 +90,10 @@ const PostController = {
     try {
       const { id } = req.params;
       const post = await Post.findById(id);
-
       if (!post) return res.status(404).json({ message: 'Post no encontrado' });
 
       post.likes = post.likes.filter(userId => userId.toString() !== req.user._id.toString());
       await post.save();
-
       await post.populate('author', 'name');
 
       res.status(200).json({ message: 'Like eliminado', post });
@@ -112,7 +106,6 @@ const PostController = {
     try {
       const { id } = req.params;
       const post = await Post.findById(id);
-
       if (!post) return res.status(404).json({ message: 'Post no encontrado' });
       if (post.author.toString() !== req.user._id.toString()) {
         return res.status(403).json({ message: 'No puedes editar este post' });
@@ -120,7 +113,6 @@ const PostController = {
 
       const updatedPost = await Post.findByIdAndUpdate(id, req.body, { new: true });
       await updatedPost.populate('author', 'name');
-
       res.status(200).json({ message: 'Post actualizado', post: updatedPost });
     } catch (error) {
       res.status(500).json({ message: 'Error al actualizar el post', error: error.message });
@@ -131,7 +123,6 @@ const PostController = {
     try {
       const { id } = req.params;
       const post = await Post.findById(id);
-
       if (!post) return res.status(404).json({ message: 'Post no encontrado' });
       if (post.author.toString() !== req.user._id.toString()) {
         return res.status(403).json({ message: 'No puedes eliminar este post' });
@@ -162,13 +153,11 @@ const PostController = {
         .populate('comments.user', 'name');
 
       if (!post) return res.status(404).json({ message: 'Post no encontrado' });
-
       res.status(200).json({ post });
     } catch (error) {
       res.status(500).json({ message: 'Error al obtener el post', error: error.message });
     }
   }
-
 };
 
 module.exports = PostController;
