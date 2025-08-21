@@ -1,7 +1,9 @@
 const Post = require('../models/Post');
+const Comment = require('../models/Comment');
 
 const PostController = {
 
+  // --- POSTS ---
   async create(req, res, next) {
     try {
       const { title, content, image } = req.body;
@@ -150,12 +152,53 @@ const PostController = {
     try {
       const post = await Post.findById(req.params.id)
         .populate('author', 'name email')
-        .populate('comments.user', 'name');
+        .populate({
+          path: 'comments',
+          populate: { path: 'author', select: 'name' }
+        });
 
       if (!post) return res.status(404).json({ message: 'Post no encontrado' });
       res.status(200).json({ post });
     } catch (error) {
       res.status(500).json({ message: 'Error al obtener el post', error: error.message });
+    }
+  },
+
+  // --- COMMENTS ---
+  async addComment(req, res) {
+    try {
+      const { id: postId } = req.params;
+      const { content } = req.body;
+
+      if (!content) return res.status(400).json({ message: 'El contenido es obligatorio' });
+
+      const post = await Post.findById(postId);
+      if (!post) return res.status(404).json({ message: 'Post no encontrado' });
+
+      const comment = await Comment.create({
+        content,
+        author: req.user._id,
+        post: postId
+      });
+
+      post.comments = post.comments || [];
+      post.comments.push(comment._id);
+      await post.save();
+
+      await comment.populate('author', 'name');
+      res.status(201).json({ message: 'Comentario agregado', comment });
+    } catch (error) {
+      res.status(500).json({ message: 'Error al crear comentario', error: error.message });
+    }
+  },
+
+  async getComments(req, res) {
+    try {
+      const { id: postId } = req.params;
+      const comments = await Comment.find({ post: postId }).populate('author', 'name');
+      res.status(200).json({ comments });
+    } catch (error) {
+      res.status(500).json({ message: 'Error al obtener comentarios', error: error.message });
     }
   }
 };
