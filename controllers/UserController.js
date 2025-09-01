@@ -88,6 +88,7 @@ async getProfile(req, res) {
   }
 },
 
+
 async findById(req, res) {
   try {
     const { id } = req.params;
@@ -98,6 +99,21 @@ async findById(req, res) {
     res.status(500).json({ message: 'Error al buscar por ID' });
   }
 },
+
+async getUserPosts(req, res) {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id);
+    if (!user) return res.status(404).json({ message: "Abejita no encontrada" });
+
+    const posts = await Post.find({ author: id });
+    res.status(200).json({ posts });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error al obtener zumbidos de esta abejita" });
+  }
+},
+
 
 logout(req, res) {
   try {

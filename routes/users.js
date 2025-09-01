@@ -11,5 +11,6 @@ router.get('/me', auth, UserController.getProfile);
 router.post('/logout', UserController.logout);
 
 router.get('/:id', UserController.findById);
+router.get("/:id/posts", UserController.getUserPosts);
 
 module.exports = router;
